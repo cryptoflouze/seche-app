@@ -181,7 +181,7 @@ function resetDay(){
 function showToast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
 
 (function(){
-  const d=today(), data=load('seche',{}), td=data[d]||{m:[0,0,0,0],w:null,omad:false};
+  const d=today(), data=load('seche',{}), td=data[d]||{m:[0,0,0,0],w:null,omad:false);
   [1,2,3,4].forEach((i,j)=>document.getElementById('m'+i).value=td.m[j]||''); document.getElementById('omad').checked=!!td.omad; if(td.omad)toggleOmad(); if(td.w)document.getElementById('weight').value=td.w;
   document.getElementById('dayName').textContent=DAYS[new Date().getDay()]+' : '+SESSIONS[new Date().getDay()].name;
   update(); renderWeights(load('weights',[]));

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SÈCHE</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:#0f0f13; color:#fff; min-height:100vh; }
+  .app { max-width:480px; margin:0 auto; padding:16px; padding-bottom:100px; }
+  header { display:flex; justify-content:space-between; align-items:center; padding:16px 0; }
+  header h1 { font-size:24px; letter-spacing:2px; }
+  .streak { background:#1a1a22; border-radius:12px; padding:8px 14px; font-size:13px; }
+  .streak span { color:#4ade80; font-weight:bold; }
+  .card { background:#1a1a22; border-radius:16px; padding:20px; margin-bottom:16px; }
+  .card h2 { font-size:15px; color:#888; text-transform:uppercase; letter-spacing:1px; margin-bottom:14px; }
+  .calories-big { font-size:42px; font-weight:bold; }
+  .calories-big small { font-size:16px; color:#888; }
+  .bar { height:10px; background:#2a2a35; border-radius:5px; overflow:hidden; margin:12px 0; }
+  .bar-fill { height:100%; background:linear-gradient(90deg,#4ade80,#22c55e); border-radius:5px; transition:width .5s; }
+  .macros { display:flex; gap:8px; }
+  .macro { flex:1; background:#252530; border-radius:10px; padding:12px; text-align:center; }
+  .macro .val { font-size:20px; font-weight:bold; }
+  .macro .lbl { font-size:11px; color:#888; margin-top:2px; }
+  .macro.p .val { color:#f97316; }
+  .macro.c .val { color:#3b82f6; }
+  .macro.f .val { color:#eab308; }
+  .meal { display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid #2a2a35; }
+  .meal:last-child { border:none; }
+  .meal-name { font-weight:600; }
+  .meal-kcal { color:#888; font-size:14px; }
+  .meal input { width:80px; background:#252530; border:none; border-radius:8px; padding:8px; color:#fff; text-align:right; font-size:16px; }
+  .meal input:focus { outline:1px solid #4ade80; }
+  .ex { display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid #2a2a35; cursor:pointer; }
+  .ex:last-child { border:none; }
+  .ex.done { opacity:.4; }
+  .ex.done .ex-name { text-decoration:line-through; }
+  .ex-check { width:26px; height:26px; border-radius:50%; border:2px solid #4ade80; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:14px; }
+  .ex.done .ex-check { background:#4ade80; color:#000; }
+  .ex-name { font-weight:600; }
+  .ex-detail { font-size:12px; color:#888; margin-top:2px; }
+  .ex-link { font-size:12px; color:#3b82f6; text-decoration:none; }
+  .weight-row { display:flex; gap:10px; align-items:center; }
+  .weight-row input { flex:1; background:#252530; border:none; border-radius:10px; padding:14px; color:#fff; font-size:18px; }
+  .weight-row button { background:#4ade80; color:#000; border:none; border-radius:10px; padding:14px 20px; font-weight:bold; font-size:15px; cursor:pointer; }
+  .bilan { text-align:center; padding:20px; }
+  .bilan .num { font-size:36px; font-weight:bold; }
+  .bilan .num.neg { color:#f87171; }
+  .bilan .num.pos { color:#4ade80; }
+  .bilan p { color:#888; margin-top:6px; font-size:14px; }
+  .btn-reset { background:none; border:1px solid #333; color:#888; border-radius:10px; padding:10px; width:100%; font-size:13px; cursor:pointer; margin-top:10px; }
+  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(100px); background:#4ade80; color:#000; padding:12px 24px; border-radius:12px; font-weight:bold; transition:transform .3s; z-index:10; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>SÈCHE</h1>
+    <div class="streak">🔥 <span id="streak">0</span> jours</div>
+  </header>
+
+  <div class="card">
+    <h2>Aujourd'hui</h2>
+    <div class="calories-big"><span id="kcalLeft">2000</span> <small>kcal restantes</small></div>
+    <div class="bar"><div class="bar-fill" id="bar" style="width:0%"></div></div>
+    <div class="macros">
+      <div class="macro p"><div class="val" id="pLeft">180</div><div class="lbl">protéines</div></div>
+      <div class="macro c"><div class="val" id="cLeft">180</div><div class="lbl">glucides</div></div>
+      <div class="macro f"><div class="val" id="fLeft">75</div><div class="lbl">lipides</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Repas</h2>
+    <div class="meal"><div class="meal-name">Petit-déj</div><input type="number" id="m1" placeholder="0" oninput="update()"></div>
+    <div class="meal"><div class="meal-name">Déjeuner</div><input type="number" id="m2" placeholder="0" oninput="update()"></div>
+    <div class="meal"><div class="meal-name">Dîner</div><input type="number" id="m3" placeholder="0" oninput="update()"></div>
+    <div class="meal"><div class="meal-name">Collations</div><input type="number" id="m4" placeholder="0" oninput="update()"></div>
+    <div class="meal" style="border:none;padding-top:16px">
+      <label style="font-size:13px;color:#888"><input type="checkbox" id="omad" onchange="toggleOmad()"> Mode One Meal A Day</label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Séance — <span id="dayName">Mercredi</span> : Bas du corps</h2>
+    <div class="ex" onclick="toggleEx(this)"><div class="ex-check">✓</div><div><div class="ex-name">Échauffement</div><div class="ex-detail">5 min vélo léger</div></div></div>
+    <div class="ex" onclick="toggleEx(this)"><div class="ex-check">✓</div><div><div class="ex-name">Squats</div><div class="ex-detail">4 × 12-15 · repos 60 s</div><a class="ex-link" href="https://youtu.be/aclHkVaku9U" target="_blank">Voir la vidéo</a></div></div>
+    <div class="ex" onclick="toggleEx(this)"><div class="ex-check">✓</div><div><div class="ex-name">Fentes marchées</div><div class="ex-detail">3 × 10 par jambe</div><a class="ex-link" href="https://youtu.be/L8fvypFcy94" target="_blank">Voir la vidéo</a></div></div>
+    <div class="ex" onclick="toggleEx(this)"><div class="ex-check">✓</div><div><div class="ex-name">Soulevé de terre roumain</div><div class="ex-detail">3 × 10-12 · haltères</div><a class="ex-link" href="https://youtu.be/2SHsk9AzdjA" target="_blank">Voir la vidéo</a></div></div>
+    <div class="ex" onclick="toggleEx(this)"><div class="ex-check">✓</div><div><div class="ex-name">Mollets debout</div><div class="ex-detail">3 × 15-20</div><a class="ex-link" href="https://youtu.be/gwLzBJYoWlI" target="_blank">Voir la vidéo</a></div></div>
+    <div class="ex" onclick="toggleEx(this)"><div class="ex-check">✓</div><div><div class="ex-name">Gainage latéral</div><div class="ex-detail">3 × 30 s par côté</div><a class="ex-link" href="https://youtu.be/K9YSHNlzCt8" target="_blank">Voir la vidéo</a></div></div>
+  </div>
+
+  <div class="card">
+    <h2>Poids du matin</h2>
+    <div class="weight-row"><input type="number" id="weight" step="0.1" placeholder="110.0"><button onclick="saveWeight()">OK</button></div>
+    <div id="weightHist" style="font-size:13px;color:#888;margin-top:10px"></div>
+  </div>
+
+  <div class="card bilan">
+    <div class="num" id="bilanNum">0</div>
+    <p id="bilanTxt">kcal au-dessus de l'objectif</p>
+  </div>
+
+  <button class="btn-reset" onclick="resetDay()">Réinitialiser la journée</button>
+</div>
+<div class="toast" id="toast">Séance validée ! 💪</div>
+<script>
+const GOAL = { kcal:2000, p:180, c:180, f:75 };
+const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+const SESSIONS = {
+  1:{name:'Haut du corps',ex:['Développé militaire 4×8-10','Rowing penché 4×8-10','Curl biceps 3×10-12','Extension triceps 3×10-12','Gainage 3×30-45s']},
+  2:{name:'Cardio',ex:['Vélo 30-40 min zone 2','Ou tapis marche rapide 30 min']},
+  3:{name:'Bas du corps',ex:['Squats 4×12-15','Fentes marchées 3×10/jambe','Soulevé de terre roumain 3×10-12','Mollets 3×15-20','Gainage latéral 3×30s/côté']},
+  4:{name:'Cardio',ex:['Tapis 30-40 min marche rapide']},
+  5:{name:'Haut du corps',ex:['Développé couché haltères 4×8-10','Tirage menton 3×10-12','Curl marteau 3×10-12','Dips/pompes 3×8-12','Gainage 3×30-45s']},
+  6:{name:'Cardio',ex:['Vélo ou tapis 30-40 min zone 2']},
+  0:{name:'Repos',ex:['Rien à faire — récupération 😴']}
+);
+
+function load(k,d){ try{ return JSON.parse(localStorage.getItem(k))??d; }catch(e){ return d; } }
+function save(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
+
+function today(){ return new Date().toISOString().slice(0,10); }
+
+function update(){
+  const kcal = [1,2,3,4].reduce((s,i)=>s+(+document.getElementById('m'+i).value||0),0);
+  const left = GOAL.kcal - kcal;
+  document.getElementById('kcalLeft').textContent = left;
+  document.getElementById('bar').style.width = Math.min(100,kcal/GOAL.kcal*100)+'%';
+  const p = Math.round(kcal*.4/4), c = Math.round(kcal*.4/4), f = Math.round(kcal*.2/9);
+  document.getElementById('pLeft').textContent = Math.max(0,GOAL.p-p);
+  document.getElementById('cLeft').textContent = Math.max(0,GOAL.c-c);
+  document.getElementById('fLeft').textContent = Math.max(0,GOAL.f-f);
+  const b = document.getElementById('bilanNum'), t = document.getElementById('bilanTxt);
+  b.textContent = left; b.className = 'num '+(left>=0?'pos':'neg'); t.textContent = left>=0?'kcal restantes pour l\'objectif':'kcal au-dessus de l\'objectif';
+  saveDay();
+}
+
+function saveDay(){
+  const d = today(), data = load('seche',{});
+  data[d] = { m:[1,2,3,4].map(i=>+document.getElementById('m'+i).value||0), w:+document.getElementById('weight').value||null, omad:document.getElementById('omad').checked };
+  save('seche',data); updateStreak(data);
+}
+
+function updateStreak(data){
+  let s=0, d=new Date();
+  while(true){ const k=d.toISOString().slice(0,10); if(data[k]&&data[k].m.some(x=>x>0)){s++;d.setDate(d.getDate()-1);}else break; }
+  document.getElementById('streak').textContent = s;
+}
+
+function toggleOmad(){
+  const on = document.getElementById('omad').checked;
+  [1,2,3].forEach(i=>{ const el=document.getElementById('m'+i); el.disabled=on; if(on)el.value=''; });
+  if(on) document.getElementById('m4').focus();
+  update();
+}
+
+function toggleEx(el){
+  el.classList.toggle('done'); const done=[...document.querySelectorAll('.ex.done')].length;
+  if(done===document.querySelectorAll('.ex').length) showToast('Séance validée ! 💪'); saveDay();
+}
+
+function saveWeight(){
+  saveDay(); const hist=load('weights',[]);
+  const w=+document.getElementById('weight').value; if(!w)return;
+  hist.push({d:today(),w}); save('weights',hist.slice(-14));
+  renderWeights(hist.slice(-14)); showToast('Poids enregistré : '+w+' kg');}
+
+function renderWeights(hist){
+  document.getElementById('weightHist').textContent = hist.length?hist.map(h=>h.d.slice(5)+': '+h.w+' kg').join(' · '):'Aucun poids enregistré';
+}
+
+function resetDay(){
+  if(!confirm('Réinitialiser la journée ?'))return;
+  [1,2,3,4].forEach(i=>document.getElementById('m'+i).value=''); document.getElementById('omad').checked=false; toggleOmad(); update();
+}
+
+function showToast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+
+(function(){
+  const d=today(), data=load('seche',{}), td=data[d]||{m:[0,0,0,0],w:null,omad:false};
+  [1,2,3,4].forEach((i,j)=>document.getElementById('m'+i).value=td.m[j]||''); document.getElementById('omad').checked=!!td.omad; if(td.omad)toggleOmad(); if(td.w)document.getElementById('weight').value=td.w;
+  document.getElementById('dayName').textContent=DAYS[new Date().getDay()]+' : '+SESSIONS[new Date().getDay()].name;
+  update(); renderWeights(load('weights',[]));
+})();
+</script>
+</body>
+</html>

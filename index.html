@@ -31,6 +31,7 @@
   .meal-kcal { color:#888; font-size:14px; }
   .meal input { width:80px; background:#252530; border:none; border-radius:8px; padding:8px; color:#fff; text-align:right; font-size:16px; }
   .meal input:focus { outline:1px solid #4ade80; }
+  .meal input:disabled { opacity:.35; }
   .ex { display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid #2a2a35; cursor:pointer; }
   .ex:last-child { border:none; }
   .ex.done { opacity:.4; }
@@ -139,7 +140,7 @@ function update(){
 }
 
 function saveDay(){
-  const d = today(), data = load('seche',{});
+  const d = today(), data = load('seche', {});
   data[d] = { m:[1,2,3,4].map(i=>+document.getElementById('m'+i).value||0), w:+document.getElementById('weight').value||null, omad:document.getElementById('omad').checked };
   save('seche',data); updateStreak(data);
 }
@@ -180,7 +181,7 @@ function resetDay(){
 function showToast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
 
 (function(){
-  const d=today(), data=load('seche',{}), td=data[d]||{m:[0,0,0,0],w:null,omad:false);
+  const d=today(), data=load('seche',{}), td=data[d]||{m:[0,0,0,0],w:null,omad:false};
   [1,2,3,4].forEach((i,j)=>document.getElementById('m'+i).value=td.m[j]||''); document.getElementById('omad').checked=!!td.omad; if(td.omad)toggleOmad(); if(td.w)document.getElementById('weight').value=td.w;
   document.getElementById('dayName').textContent=DAYS[new Date().getDay()]+' : '+SESSIONS[new Date().getDay()].name;
   update(); renderWeights(load('weights',[]));

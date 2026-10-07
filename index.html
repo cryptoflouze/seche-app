@@ -66,8 +66,8 @@
     <div class="bar"><div class="bar-fill" id="bar" style="width:0%"></div></div>
     <div class="macros">
       <div class="macro p"><div class="val" id="pLeft">180</div><div class="lbl">protéines</div></div>
-      <div class="macro c"><div class="val" id="cLeft">180</div><div class="lbl">glucides</div></div>
-      <div class="macro f"><div class="val" id="fLeft">75</div><div class="lbl">lipides</div></div>
+      <div class="macro c"><div class="val" id="cLeft">150</div><div class="lbl">glucides</div></div>
+      <div class="macro f"><div class="val" id="fLeft">60</div><div class="lbl">lipides</div></div>
     </div>
   </div>
 
@@ -107,7 +107,7 @@
 </div>
 <div class="toast" id="toast">Séance validée ! 💪</div>
 <script>
-const GOAL = { kcal:2000, p:180, c:180, f:75 };
+const GOAL = { kcal:2000, p:180, c:150, f:60 };
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const SESSIONS = {
   1:{name:'Haut du corps',ex:['Développé militaire 4×8-10','Rowing penché 4×8-10','Curl biceps 3×10-12','Extension triceps 3×10-12','Gainage 3×30-45s']},
@@ -180,7 +180,7 @@ function resetDay(){
 function showToast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
 
 (function(){
-  const d=today(), data=load('seche',{}), td=data[d]||{m:[0,0,0,0],w:null,omad:false};
+  const d=today(), data=load('seche',{}), td=data[d]||{m:[0,0,0,0],w:null,omad:false);
   [1,2,3,4].forEach((i,j)=>document.getElementById('m'+i).value=td.m[j]||''); document.getElementById('omad').checked=!!td.omad; if(td.omad)toggleOmad(); if(td.w)document.getElementById('weight').value=td.w;
   document.getElementById('dayName').textContent=DAYS[new Date().getDay()]+' : '+SESSIONS[new Date().getDay()].name;
   update(); renderWeights(load('weights',[]));
